@@ -1,13 +1,16 @@
 import mongoose, {Schema} from "mongoose";
+import bcrypt from "bcrypt";
 
 const UserSchema = new Schema({
     username: {
         type: String,
         required: true,
+        unique: true,
     },
     email: {
         type: String,
         required: true,
+        unique: true,
     },
     password: {
         type: String,
@@ -37,6 +40,11 @@ const UserSchema = new Schema({
     }
 }, {
     timestamps: true
+})
+
+UserSchema.pre("save", function(next) {
+    this.password = bcrypt.hashSync(this.password, 10);
+    next();
 })
 
 const User = mongoose.model("User", UserSchema, "users");
