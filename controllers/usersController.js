@@ -2,11 +2,13 @@ import User from "../models/UserModel.js";
 import PasswordValidator from "password-validator";
 import bcrypt from "bcrypt";
 
+import asyncHandler from "express-async-handler";
+
 // @desc Registration of User
 // @route POST /api/v1/users/register
 // @access Private/Admin
 
-export const registerUser = async (req, res) => {
+export const registerUser = asyncHandler(async (req, res) => {
     const {username, email, password, passwordConfirmation} = req.body;
 
     // check passwords equal
@@ -57,13 +59,13 @@ export const registerUser = async (req, res) => {
         message: "User created successfully",
         data: {username: usernameResult, email: emailResult, _id, orders, wishlists, isAdmin},
     })
-}
+})
 
 // @desc Login User
 // @route POST /api/v1/users/login
 // @access Public
 
-export const loginUser = async (req, res) => {
+export const loginUser = asyncHandler(async (req, res) => {
     const {email, password} = req.body;
 
     // check all the fields were provided
@@ -84,7 +86,7 @@ export const loginUser = async (req, res) => {
         })
     }
     // comparing passwords
-    if (!bcrypt.compare(password, existingUser.password)) {
+    if (!await bcrypt.compare(password, existingUser.password)) {
         return res.status(401).json({
             success: false,
             message: "User with the same email and password pair doesn't exist",
@@ -99,4 +101,4 @@ export const loginUser = async (req, res) => {
         message: "User login successfully",
         data: objectedUser
     })
-}
+})
