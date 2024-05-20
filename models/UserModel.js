@@ -37,13 +37,18 @@ const UserSchema = new Schema({
         province: String,
         country: String,
         phone: String,
+    },
+    accessToken: {
+        type: String,
     }
 }, {
     timestamps: true
 })
 
 UserSchema.pre("save", function(next) {
-    this.password = bcrypt.hashSync(this.password, 10);
+    if(this.isModified("password")) {
+        this.password = bcrypt.hashSync(this.password, 10);
+    }
     next();
 })
 

@@ -1,0 +1,15 @@
+meta {
+  name: get user profile
+  type: http
+  seq: 4
+}
+
+get {
+  url: http://127.0.0.1:3001/api/v1/users/profile
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

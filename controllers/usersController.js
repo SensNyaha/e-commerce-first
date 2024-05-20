@@ -3,6 +3,9 @@ import PasswordValidator from "password-validator";
 import bcrypt from "bcrypt";
 
 import asyncHandler from "express-async-handler";
+import generateToken from "../utils/generateToken.js";
+import verifyToken from "../utils/verifyToken.js";
+import privateRouteHandler from "../middlewares/privateRouteHandler.js";
 
 // @desc Registration of User
 // @route POST /api/v1/users/register
@@ -92,13 +95,41 @@ export const loginUser = asyncHandler(async (req, res) => {
             message: "User with the same email and password pair doesn't exist",
         })
     }
+
+    existingUser.accessToken = generateToken(existingUser._id);
+
+    const tokenedUser = await existingUser.save();
+
     // convert document to an Object to remove password field
-    const objectedUser = existingUser.toObject();
+    const objectedUser = tokenedUser.toObject();
     delete objectedUser.password;
 
     res.json({
         success: true,
         message: "User login successfully",
         data: objectedUser
+    })
+})
+
+// @desc Get User Profile
+// @route GET /api/v1/users/profile
+// @access Private
+
+export const getUserProfile = asyncHandler( async (req, res) => {
+    const {_id} = req.body;
+
+    const existingUser = await User.findById(_id).select("-password");
+
+    if (!existingUser) {
+        return res.status(403).json({
+            success: false,
+            message: "Authentication failed",
+        })
+    }
+
+    return res.status(200).json({
+        success: true,
+        message: "Operation ran successfully",
+        data: existingUser
     })
 })
