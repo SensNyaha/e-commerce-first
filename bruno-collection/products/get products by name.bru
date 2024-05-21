@@ -1,0 +1,15 @@
+meta {
+  name: get products by name
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseurl}}/products?name=IPhon
+  body: json
+  auth: none
+}
+
+query {
+  name: IPhon
+}

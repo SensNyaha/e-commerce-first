@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: http://127.0.0.1:3001/api/v1/products/create
+  url: {{baseurl}}/products/create
   body: json
   auth: bearer
 }
@@ -16,13 +16,13 @@ auth:bearer {
 
 body:json {
   {
-    "name": "Iphone 11",
-    "brand": "Apple",
-    "description": "A new Mobile phone",
-    "category": "Electronics",
+    "name": "Reebok Baseball Cap",
+    "brand": "Reebok",
+    "description": "После полевых испытаний",
+    "category": "Clothes",
     "sizes": "No-Size",
-    "colors": "Black",
-    "totalQuantity": 12,
-    "price": 1000
+    "colors": ["Blue", "Yellow"],
+    "totalQuantity": 2,
+    "price": 15
   }
 }

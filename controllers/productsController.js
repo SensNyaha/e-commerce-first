@@ -29,7 +29,7 @@ export const createProduct = asyncHandler(async (req, res) => {
     if (existingProduct) {
         return res.status(400).json({
             success: false,
-            message: "Product with the same name already exist",
+            message: "Product with the same name already exists",
         })
     }
 
@@ -49,5 +49,26 @@ export const createProduct = asyncHandler(async (req, res) => {
         success: true,
         message: "New Product created successfully",
         data: newProduct
+    })
+})
+
+// @desc Get All Products
+// @route GET /api/v1/products
+// @access Public
+
+export const getProducts = asyncHandler(async (req, res) => {
+
+    const {name} = req.query;
+
+    const mongooseQuery = {};
+
+    if (name) mongooseQuery.name = { "$regex": name, "$options": "i" };
+
+    const products = await Product.find(mongooseQuery);
+
+    res.json({
+        success: true,
+        message: "Products fetched successfully",
+        data: products
     })
 })
