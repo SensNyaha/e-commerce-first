@@ -5,11 +5,15 @@ meta {
 }
 
 get {
-  url: {{baseurl}}/products?brands=ReeBOk,ApplE
+  url: {{baseurl}}/products?sizes=XL,NO-SIZE&colors=Black,White&categories=Electronics&name=Iphone&brands=Apple,Reebok
   body: json
   auth: none
 }
 
 query {
-  brands: ReeBOk,ApplE
+  sizes: XL,NO-SIZE
+  colors: Black,White
+  categories: Electronics
+  name: Iphone
+  brands: Apple,Reebok
 }

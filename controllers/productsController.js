@@ -58,12 +58,16 @@ export const createProduct = asyncHandler(async (req, res) => {
 
 export const getProducts = asyncHandler(async (req, res) => {
 
-    const {name, brands, sizes, colors} = req.query;
+    const {name, brands, sizes, colors, categories} = req.query;
 
     const mongooseQuery = {};
 
     if (name) mongooseQuery.name = { "$regex": name, "$options": "i" };
     if (brands) mongooseQuery.brand = { "$in": brands.split(",").map(brand => new RegExp(brand, "i"))};
+    if (sizes) mongooseQuery.sizes = { "$in": sizes.split(",").map(size => new RegExp(size, "i"))};
+    if (colors) mongooseQuery.colors = { "$in": colors.split(",").map(color => new RegExp(color, "i"))};
+    if (categories) mongooseQuery.category = { "$in": categories.split(",").map(cat => new RegExp(cat, "i"))};
+
 
     const products = await Product.find(mongooseQuery);
 
