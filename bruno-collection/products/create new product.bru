@@ -1,0 +1,28 @@
+meta {
+  name: create new product
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://127.0.0.1:3001/api/v1/products/create
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Iphone 11",
+    "brand": "Apple",
+    "description": "A new Mobile phone",
+    "category": "Electronics",
+    "sizes": "No-Size",
+    "colors": "Black",
+    "totalQuantity": 12,
+    "price": 1000
+  }
+}

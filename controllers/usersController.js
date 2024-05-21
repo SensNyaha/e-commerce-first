@@ -9,7 +9,7 @@ import privateRouteHandler from "../middlewares/privateRouteHandler.js";
 
 // @desc Registration of User
 // @route POST /api/v1/users/register
-// @access Private/Admin
+// @access Public
 
 export const registerUser = asyncHandler(async (req, res) => {
     const {username, email, password, passwordConfirmation} = req.body;
