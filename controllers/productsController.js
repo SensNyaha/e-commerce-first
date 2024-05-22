@@ -60,6 +60,8 @@ export const getProducts = asyncHandler(async (req, res) => {
 
     const {name, brands, sizes, colors, categories, priceFrom, priceUpto} = req.query;
 
+    let {page, limit} = req.query;
+
     const mongooseQuery = {};
 
     if (name) mongooseQuery.name = { "$regex": name, "$options": "i" };
@@ -68,13 +70,15 @@ export const getProducts = asyncHandler(async (req, res) => {
     if (colors) mongooseQuery.colors = { "$in": colors.split(",").map(color => new RegExp(color, "i"))};
     if (categories) mongooseQuery.category = { "$in": categories.split(",").map(cat => new RegExp(cat, "i"))};
 
-    if (priceUpto && priceFrom) mongooseQuery.price = {$gt: priceFrom, $lt: priceUpto};
-    else if (priceUpto && !priceFrom) mongooseQuery.price = {$lt: priceUpto};
-    else if (!priceUpto && priceFrom) mongooseQuery.price = {$gt: priceFrom};
+    if (priceUpto && priceFrom) mongooseQuery.price = {$gte: priceFrom, $lte: priceUpto};
+    else if (priceUpto && !priceFrom) mongooseQuery.price = {$lte: priceUpto};
+    else if (!priceUpto && priceFrom) mongooseQuery.price = {$gte: priceFrom};
 
-    console.log(mongooseQuery)
+    if (!page) page = 1;
+    if (!limit) limit = 10;
 
-    const products = await Product.find(mongooseQuery);
+
+    const products = await Product.find(mongooseQuery).skip((page - 1) * limit).limit(limit);
 
     res.json({
         success: true,

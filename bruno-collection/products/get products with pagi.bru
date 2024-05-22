@@ -1,0 +1,16 @@
+meta {
+  name: get products with pagi
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseurl}}/products?page=4&limit=1
+  body: json
+  auth: none
+}
+
+query {
+  page: 4
+  limit: 1
+}
