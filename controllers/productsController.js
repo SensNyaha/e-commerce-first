@@ -77,12 +77,49 @@ export const getProducts = asyncHandler(async (req, res) => {
     if (!page) page = 1;
     if (!limit) limit = 10;
 
+    const totalDocs = await Product.countDocuments();
 
     const products = await Product.find(mongooseQuery).skip((page - 1) * limit).limit(limit);
+
+    if (!products.length)
+        return res.status(404).json({
+            success: false,
+            message: "No Products to show",
+            total: totalDocs
+        })
 
     res.json({
         success: true,
         message: "Products fetched successfully",
-        data: products
+        data: products,
+        total: totalDocs
+    })
+})
+
+// @desc Get Single Product
+// @route GET /api/v1/products/:id
+// @access Public
+
+export const getProductById = asyncHandler(async (req, res) => {
+    const {id} = req.params;
+
+    if (!id)
+        return res.status(400).json({
+            success: false,
+            message: "No ID provided with request"
+        })
+
+    const foundProduct = await Product.findById(id);
+
+    if (!foundProduct)
+        return res.status(404).json({
+            success: false,
+            message: "Product with the same ID can not be found"
+        })
+
+    res.json({
+        success: true,
+        message: `Product ${id} successfully found`,
+        data: foundProduct
     })
 })
