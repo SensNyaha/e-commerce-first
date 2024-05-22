@@ -1,0 +1,15 @@
+meta {
+  name: get products by price range
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseurl}}/products?priceUpto=100
+  body: json
+  auth: none
+}
+
+query {
+  priceUpto: 100
+}

@@ -58,7 +58,7 @@ export const createProduct = asyncHandler(async (req, res) => {
 
 export const getProducts = asyncHandler(async (req, res) => {
 
-    const {name, brands, sizes, colors, categories} = req.query;
+    const {name, brands, sizes, colors, categories, priceFrom, priceUpto} = req.query;
 
     const mongooseQuery = {};
 
@@ -68,6 +68,11 @@ export const getProducts = asyncHandler(async (req, res) => {
     if (colors) mongooseQuery.colors = { "$in": colors.split(",").map(color => new RegExp(color, "i"))};
     if (categories) mongooseQuery.category = { "$in": categories.split(",").map(cat => new RegExp(cat, "i"))};
 
+    if (priceUpto && priceFrom) mongooseQuery.price = {$gt: priceFrom, $lt: priceUpto};
+    else if (priceUpto && !priceFrom) mongooseQuery.price = {$lt: priceUpto};
+    else if (!priceUpto && priceFrom) mongooseQuery.price = {$gt: priceFrom};
+
+    console.log(mongooseQuery)
 
     const products = await Product.find(mongooseQuery);
 
