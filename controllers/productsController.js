@@ -169,3 +169,46 @@ export const updateProductById = asyncHandler(async (req, res) => {
         data: updatedProduct
     })
 })
+
+// @descr Delete Single Product
+// @route DELETE /api/products/:id
+// @access Private/Admin
+
+export const deleteProductById = asyncHandler(async (req, res) => {
+    // user _id inserted my middleware
+    const {_id: userId} = req.body;
+    // product id provided by params
+    const {id} = req.params;
+
+    if (!userId) {
+        return res.status(403).json({
+            success: false,
+            message: "User does not logged in",
+        })
+    }
+
+    const existingProduct = await Product.findById(id);
+
+    if (!existingProduct) {
+        return res.status(404).json({
+            success: false,
+            message: "Product with the same ID can not be found"
+        })
+    }
+
+    const existingUserWithId = await User.findById(userId);
+
+
+    if (existingProduct.user != userId && !existingUserWithId.isAdmin)
+        return res.status(403).json({
+            success: false,
+            message: "You have no rights to delete this product"
+        })
+
+    await Product.findByIdAndDelete(id);
+
+    res.json({
+        success: true,
+        message: "You have successfully delete product",
+    })
+})
