@@ -1,0 +1,28 @@
+meta {
+  name: update one product
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseurl}}/products/664cf06ac5702ce1f5786334
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "New Football Shirt",
+    "brand": "Adidas",
+    "description": "With signatures of Pogba and Beckham",
+    "category": "Clothes",
+    "sizes": ["XL", "L"],
+    "colors": ["Black", "White"],
+    "totalQuantity": 5,
+    "price": 120
+  }
+}

@@ -1,5 +1,6 @@
 import asyncHandler from "express-async-handler";
 import Product from "../models/ProductModel.js";
+import User from "../models/UserModel.js";
 
 // @desc Create New Product
 // @route POST /api/v1/products/create
@@ -121,5 +122,50 @@ export const getProductById = asyncHandler(async (req, res) => {
         success: true,
         message: `Product ${id} successfully found`,
         data: foundProduct
+    })
+})
+
+// @desc Update Single Product
+// @route PUT /api/products/:id
+// @access Private/Admin
+
+export const updateProductById = asyncHandler(async (req, res) => {
+    const {name, brand, description, category, sizes, colors, price, totalQuantity} = req.body;
+    // user _id inserted my middleware
+    const {_id: userId} = req.body;
+    // product id provided by params
+    const {id} = req.params;
+
+    if (!userId) {
+        return res.status(403).json({
+            success: false,
+            message: "User does not logged in",
+        })
+    }
+
+    const existingProduct = await Product.findById(id);
+
+    if (!existingProduct) {
+        return res.status(404).json({
+            success: false,
+            message: "Product with the same ID can not be found"
+        })
+    }
+
+    const existingUserWithId = await User.findById(userId);
+
+
+    if (existingProduct.user != userId && !existingUserWithId.isAdmin)
+        return res.status(403).json({
+            success: false,
+            message: "You have no rights to change this products's info"
+        })
+
+    const updatedProduct = await Product.findByIdAndUpdate(id, {name, brand, description, category, sizes, colors, price, totalQuantity}, {new: true});
+
+    res.json({
+        success: true,
+        message: "You have successfully updated product's info",
+        data: updatedProduct
     })
 })
