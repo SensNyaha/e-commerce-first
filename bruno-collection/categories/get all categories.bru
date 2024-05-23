@@ -1,0 +1,21 @@
+meta {
+  name: get all categories
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseurl}}/categories
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Phones"
+  }
+}

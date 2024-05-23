@@ -170,7 +170,7 @@ export const updateProductById = asyncHandler(async (req, res) => {
     })
 })
 
-// @descr Delete Single Product
+// @desc Delete Single Product
 // @route DELETE /api/products/:id
 // @access Private/Admin
 

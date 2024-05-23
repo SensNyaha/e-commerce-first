@@ -1,0 +1,22 @@
+meta {
+  name: update category by id
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseurl}}/categories/664f85975ab489ea2c7775e9
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Phones",
+    "products": "+664ce031b2e6183730ce92d7"
+  }
+}
