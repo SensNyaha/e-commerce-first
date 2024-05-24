@@ -2,6 +2,7 @@ import asyncHandler from "express-async-handler";
 import Product from "../models/ProductModel.js";
 import User from "../models/UserModel.js";
 import Category from "../models/CategoryModel.js";
+import Brand from "../models/BrandModel.js";
 
 // @desc Create New Product
 // @route POST /api/v1/products/create
@@ -35,12 +36,20 @@ export const createProduct = asyncHandler(async (req, res) => {
         })
     }
 
-    const existingCategory = await Category.findOne({name: category});
+    const existingCategory = await Category.findOne({name: category.toLowerCase()});
 
     if (!existingCategory)
         return res.json({
             success: false,
             message: "Category needs to be created first"
+        })
+
+    const existingBrand = await Brand.findOne({name: brand.toLowerCase()});
+
+    if (!existingBrand)
+        return res.json({
+            success: false,
+            message: "Brand needs to be created first"
         })
 
     const newProduct = await new Product({
@@ -56,7 +65,10 @@ export const createProduct = asyncHandler(async (req, res) => {
     }).save();
 
     existingCategory.products.push(newProduct._id);
-    existingCategory.save();
+    await existingCategory.save();
+
+    existingBrand.products.push(newProduct._id);
+    await existingBrand.save();
 
     return res.status(200).json({
         success: true,
@@ -166,14 +178,53 @@ export const updateProductById = asyncHandler(async (req, res) => {
 
     const existingUserWithId = await User.findById(userId);
 
-
     if (existingProduct.user != userId && !existingUserWithId.isAdmin)
         return res.status(403).json({
             success: false,
             message: "You have no rights to change this products's info"
         })
 
+    let previousCategory, previousBrand, newCategory, newBrand;
+
+    if (category) {
+        newCategory = await Category.findOne({name: category.toLowerCase()});
+
+        if (!newCategory)
+            return res.json({
+                success: false,
+                message: "Category needs to be created first"
+            })
+
+        if (category !== existingProduct.category) previousCategory = await Category.findOne({name: existingProduct.category.toLowerCase()});
+    }
+
+    if (brand) {
+        newBrand = await Brand.findOne({name: brand.toLowerCase()});
+
+        if (!newBrand)
+            return res.json({
+                success: false,
+                message: "Brand needs to be created first"
+            })
+
+        if (brand !== existingProduct.brand) previousBrand = await Brand.findOne({name: existingProduct.brand.toLowerCase()});
+    }
+
     const updatedProduct = await Product.findByIdAndUpdate(id, {name, brand, description, category, sizes, colors, price, totalQuantity}, {new: true});
+
+    if (previousCategory) {
+        previousCategory.products = previousCategory.products.filter(elem => elem != id);
+        await previousCategory.save();
+        newCategory.products.push(id);
+        await newCategory.save();
+    }
+
+    if (previousBrand) {
+        previousBrand.products = previousBrand.products.filter(elem => elem != id);
+        await previousBrand.save();
+        newBrand.products.push(id);
+        await newBrand.save();
+    }
 
     res.json({
         success: true,
@@ -210,14 +261,26 @@ export const deleteProductById = asyncHandler(async (req, res) => {
 
     const existingUserWithId = await User.findById(userId);
 
-
-    if (existingProduct.user != userId && !existingUserWithId.isAdmin)
+    if (existingProduct.user != userId && !existingUserWithId.isAdmin) {
         return res.status(403).json({
             success: false,
             message: "You have no rights to delete this product"
         })
+    }
 
     await Product.findByIdAndDelete(id);
+
+    const categoryToUpdate = await Category.findOne({name: existingProduct.category.toLowerCase()});
+    if (categoryToUpdate) {
+        categoryToUpdate.products = categoryToUpdate.products.filter(elem => elem != id);
+        await categoryToUpdate.save();
+    }
+
+    const brandToUpdate = await Brand.findOne({name: existingProduct.brand.toLowerCase()});
+    if (brandToUpdate) {
+        brandToUpdate.products = brandToUpdate.products.filter(elem => elem != id);
+        await brandToUpdate.save();
+    }
 
     res.json({
         success: true,

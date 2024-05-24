@@ -1,11 +1,11 @@
 meta {
-  name: get category by id
+  name: create brand
   type: http
-  seq: 3
+  seq: 1
 }
 
-get {
-  url: {{baseurl}}/categories/665018decbd700ede83833c8
+post {
+  url: {{baseurl}}/brands/create
   body: json
   auth: bearer
 }
@@ -16,6 +16,6 @@ auth:bearer {
 
 body:json {
   {
-    "name": "Phones"
+    "name": "HP"
   }
 }

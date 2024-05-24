@@ -1,13 +1,7 @@
 import Router from 'express';
 
 import privateRouteHandler from "../middlewares/privateRouteHandler.js";
-import {
-    createProduct,
-    deleteProductById,
-    getProductById,
-    getProducts,
-    updateProductById
-} from "../controllers/productsController.js";
+
 import {
     createCategory, deleteCategoryById,
     getCategories,

@@ -1,79 +1,78 @@
 import asyncHandler from "express-async-handler";
-import Category from "../models/CategoryModel.js";
+import Brand from "../models/BrandModel.js";
 import User from "../models/UserModel.js";
 import Product from "../models/ProductModel.js";
 
-// @desc Create a New Category
-// @route POST /api/v1/categories/create
+// @desc Create a New Brand
+// @route POST /api/v1/brands/create
 // @access Private/Admin
-export const createCategory = asyncHandler(async (req, res) => {
-    const { name, image } = req.body;
+export const createBrand = asyncHandler(async (req, res) => {
+    const { name } = req.body;
     const { _id: user } = req.body;
 
-    const existingCategory = await Category.findOne({name});
+    const existingBrand = await Brand.findOne({name});
 
-    if (existingCategory) {
+    if (existingBrand) {
         return res.status(400).json({
             success: false,
-            message: "Category already exists",
+            message: "Brand already exists",
         })
     }
 
-    const category = await new Category({
+    const brand = await new Brand({
         name: name.toLowerCase(),
         user,
-        image
     }).save();
 
     res.json({
         success: false,
         message: "Category created successfully",
-        data: category
+        data: brand
     })
 })
 
-// @desc Get all Categories
-// @route GET /api/v1/categories
+// @desc Get all Brands
+// @route GET /api/v1/brands
 // @access Public
 
-export const getCategories = asyncHandler(async (req, res) => {
-    const categories = await Category.find();
+export const getBrands = asyncHandler(async (req, res) => {
+    const brands = await Brand.find();
 
     res.json({
         success: true,
         message: "Categories fetched successfully",
-        data: categories
+        data: brands
     })
 })
 
-// @desc Get Single Category
-// @route GET /api/v1/categories/:id
+// @desc Get Single Brand
+// @route GET /api/v1/brands/:id
 // @access Public
 
-export const getCategoryById = asyncHandler(async (req, res) => {
+export const getBrandById = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const existingCategory = await Category.findById(id);
+    const existingBrand = await Brand.findById(id);
 
-    if (!existingCategory)
+    if (!existingBrand)
         return res.status(404).json({
             success: false,
-            message: "Category with the same ID was not found"
+            message: "Brand with the same ID was not found"
         })
 
     res.json({
         success: true,
-        message: "Category fetched successfully",
-        data: existingCategory
+        message: "Brand fetched successfully",
+        data: existingBrand
     })
 })
 
-// @desc Update Category by its ID
-// @route PUT /api/v1/categories/:id
+// @desc Update Brand by its ID
+// @route PUT /api/v1/brands/:id
 // @access Private/Admin
 
-export const updateCategoryById = asyncHandler(async (req, res) => {
-    const {name, image, products: bodyProducts} = req.body;
+export const updateBrandById = asyncHandler(async (req, res) => {
+    const {name, products: bodyProducts} = req.body;
     // user _id inserted my middleware
     const {_id: userId} = req.body;
     // product id provided by params
@@ -86,24 +85,24 @@ export const updateCategoryById = asyncHandler(async (req, res) => {
         })
     }
 
-    const existingCategory = await Category.findById(id);
+    const existingBrand = await Brand.findById(id);
 
-    if (!existingCategory) {
+    if (!existingBrand) {
         return res.status(404).json({
             success: false,
-            message: "Category with the same ID can not be found"
+            message: "Brand with the same ID can not be found"
         })
     }
 
     const existingUserWithId = await User.findById(userId);
 
-    if (existingCategory.user != userId && !existingUserWithId.isAdmin)
+    if (existingBrand.user != userId && !existingUserWithId.isAdmin)
         return res.status(403).json({
             success: false,
-            message: "You have no rights to change this category's info"
+            message: "You have no rights to change this brand's info"
         })
 
-    const newProductsField = [...existingCategory.products];
+    const newProductsField = [...existingBrand.products];
 
     for (const el of bodyProducts.split(",")) {
         if (el.startsWith("+")) {
@@ -127,19 +126,19 @@ export const updateCategoryById = asyncHandler(async (req, res) => {
 
     }
 
-    const updatedCategory = await Category.findByIdAndUpdate(existingCategory._id,{name, image, products: newProductsField}, {new: true});
+    const updatedBrand = await Brand.findByIdAndUpdate(existingBrand._id,{name, products: newProductsField}, {new: true});
     res.json({
         success: true,
-        message: "You have successfully updated category's info",
-        data: updatedCategory
+        message: "You have successfully updated brand's info",
+        data: updatedBrand
     })
 })
 
-// @desc Delete Single Category
-// @route DELETE /api/categories/:id
+// @desc Delete Single Brand
+// @route DELETE /api/brands/:id
 // @access Private/Admin
 
-export const deleteCategoryById = asyncHandler(async (req, res) => {
+export const deleteBrandById = asyncHandler(async (req, res) => {
     // user _id inserted my middleware
     const {_id: userId} = req.body;
     // product id provided by params
@@ -152,28 +151,28 @@ export const deleteCategoryById = asyncHandler(async (req, res) => {
         })
     }
 
-    const existingCategory = await Category.findById(id);
+    const existingBrand = await Brand.findById(id);
 
-    if (!existingCategory) {
+    if (!existingBrand) {
         return res.status(404).json({
             success: false,
-            message: "Category with the same ID can not be found"
+            message: "Brand with the same ID can not be found"
         })
     }
 
     const existingUserWithId = await User.findById(userId);
 
 
-    if (existingCategory.user != userId && !existingUserWithId.isAdmin)
+    if (existingBrand.user != userId && !existingUserWithId.isAdmin)
         return res.status(403).json({
             success: false,
             message: "You have no rights to delete this category"
         })
 
-    await Category.findByIdAndDelete(id);
+    await Brand.findByIdAndDelete(id);
 
     res.json({
         success: true,
-        message: "You have successfully delete category",
+        message: "You have successfully delete brand",
     })
 })

@@ -1,0 +1,15 @@
+meta {
+  name: get all brands
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseurl}}/brands
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
