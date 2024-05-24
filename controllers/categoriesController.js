@@ -20,7 +20,7 @@ export const createCategory = asyncHandler(async (req, res) => {
     }
 
     const category = await new Category({
-        name,
+        name: name.toLowerCase(),
         user,
         image
     }).save();
