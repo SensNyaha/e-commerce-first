@@ -1,11 +1,11 @@
 meta {
-  name: create brand
+  name: update by id
   type: http
-  seq: 1
+  seq: 4
 }
 
-post {
-  url: {{baseurl}}/brands/create
+put {
+  url: {{baseurl}}/colors/6651653099f2c488a70a42cb
   body: json
   auth: bearer
 }
@@ -16,6 +16,6 @@ auth:bearer {
 
 body:json {
   {
-    "name": "Lipton"
+    "name":"White"
   }
 }

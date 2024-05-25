@@ -2,6 +2,7 @@ import asyncHandler from "express-async-handler";
 import Brand from "../models/BrandModel.js";
 import User from "../models/UserModel.js";
 import Product from "../models/ProductModel.js";
+import Color from "../models/ColorModel.js";
 
 // @desc Create a New Brand
 // @route POST /api/v1/brands/create
@@ -26,7 +27,7 @@ export const createBrand = asyncHandler(async (req, res) => {
 
     res.json({
         success: false,
-        message: "Category created successfully",
+        message: "Brand created successfully",
         data: brand
     })
 })
@@ -40,7 +41,7 @@ export const getBrands = asyncHandler(async (req, res) => {
 
     res.json({
         success: true,
-        message: "Categories fetched successfully",
+        message: "Brands fetched successfully",
         data: brands
     })
 })
@@ -94,6 +95,15 @@ export const updateBrandById = asyncHandler(async (req, res) => {
         })
     }
 
+    const existingBrandWithName = await Brand.findOne({name: name.toLowerCase()});
+
+    if (existingBrandWithName) {
+        return res.status(400).json({
+            success: false,
+            message: "Brand with the same name already exists"
+        })
+    }
+
     const existingUserWithId = await User.findById(userId);
 
     if (existingBrand.user != userId && !existingUserWithId.isAdmin)
@@ -104,29 +114,32 @@ export const updateBrandById = asyncHandler(async (req, res) => {
 
     const newProductsField = [...existingBrand.products];
 
-    for (const el of bodyProducts.split(",")) {
-        if (el.startsWith("+")) {
-            const indexInOldField = newProductsField.findIndex(inner => el.substring(1) == inner);
-            if (indexInOldField === -1) {
-                const product = await Product.findById(el.substring(1))
-                if (product) newProductsField.push(el.substring(1));
+    if (bodyProducts) {
+        for (const el of bodyProducts.split(",")) {
+            if (el.startsWith("+")) {
+                const indexInOldField = newProductsField.findIndex(inner => el.substring(1) == inner);
+                if (indexInOldField === -1) {
+                    const product = await Product.findById(el.substring(1))
+                    if (product) newProductsField.push(el.substring(1));
+                }
             }
-        }
-        else if (el.startsWith("-")) {
-            const indexInOldField = newProductsField.findIndex(inner => el.substring(1) == inner);
-            if (indexInOldField !== -1) {
-                newProductsField.splice(indexInOldField, 1);
+            else if (el.startsWith("-")) {
+                const indexInOldField = newProductsField.findIndex(inner => el.substring(1) == inner);
+                if (indexInOldField !== -1) {
+                    newProductsField.splice(indexInOldField, 1);
+                }
             }
-        }
-        else
-            res.json({
-                success: false,
-                message: "Wrong products list formation. You must provide products with its ID and mask `+ID` to add or `-ID` to remove the product from category"
-            });
+            else
+                res.json({
+                    success: false,
+                    message: "Wrong products list formation. You must provide products with its ID and mask `+ID` to add or `-ID` to remove the product from category"
+                });
 
+        }
     }
 
-    const updatedBrand = await Brand.findByIdAndUpdate(existingBrand._id,{name, products: newProductsField}, {new: true});
+
+    const updatedBrand = await Brand.findByIdAndUpdate(existingBrand._id,{name: name.toLowerCase(), products: newProductsField}, {new: true});
     res.json({
         success: true,
         message: "You have successfully updated brand's info",

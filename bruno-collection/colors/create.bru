@@ -1,11 +1,11 @@
 meta {
-  name: create brand
+  name: create
   type: http
   seq: 1
 }
 
 post {
-  url: {{baseurl}}/brands/create
+  url: {{baseurl}}/colors/create
   body: json
   auth: bearer
 }
@@ -16,6 +16,6 @@ auth:bearer {
 
 body:json {
   {
-    "name": "Lipton"
+    "name": "blue"
   }
 }

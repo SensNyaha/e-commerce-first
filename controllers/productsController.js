@@ -3,6 +3,7 @@ import Product from "../models/ProductModel.js";
 import User from "../models/UserModel.js";
 import Category from "../models/CategoryModel.js";
 import Brand from "../models/BrandModel.js";
+import Color from "../models/ColorModel.js";
 
 // @desc Create New Product
 // @route POST /api/v1/products/create
@@ -39,7 +40,7 @@ export const createProduct = asyncHandler(async (req, res) => {
     const existingCategory = await Category.findOne({name: category.toLowerCase()});
 
     if (!existingCategory)
-        return res.json({
+        return res.status(400).json({
             success: false,
             message: "Category needs to be created first"
         })
@@ -47,10 +48,31 @@ export const createProduct = asyncHandler(async (req, res) => {
     const existingBrand = await Brand.findOne({name: brand.toLowerCase()});
 
     if (!existingBrand)
-        return res.json({
+        return res.status(400).json({
             success: false,
             message: "Brand needs to be created first"
         })
+
+    if (Array.isArray(colors)) {
+        for (const elem of colors) {
+            const existingColor = await Color.findOne({name: elem.toLowerCase()});
+
+            if (!existingColor)
+                return res.status(400).json({
+                    success: false,
+                    message: "Color needs to be created first"
+                })
+        }
+    }
+    else {
+        const existingColor = await Color.findOne({name: elem.toLowerCase()});
+
+        if (!existingColor)
+            return res.status(400).json({
+                success: false,
+                message: "Color needs to be created first"
+            })
+    }
 
     const newProduct = await new Product({
         name,
@@ -69,6 +91,19 @@ export const createProduct = asyncHandler(async (req, res) => {
 
     existingBrand.products.push(newProduct._id);
     await existingBrand.save();
+
+    if (Array.isArray(colors)) {
+        for (const elem of colors) {
+            const existingColor = await Color.findOne({name: elem.toLowerCase()});
+            existingColor.products.push(newProduct._id);
+            await existingColor.save();
+        }
+    }
+    else {
+        const existingColor = await Color.findOne({name: elem.toLowerCase()});
+        existingColor.products.push(newProduct._id);
+        await existingColor.save();
+    }
 
     return res.status(200).json({
         success: true,
@@ -184,7 +219,7 @@ export const updateProductById = asyncHandler(async (req, res) => {
             message: "You have no rights to change this products's info"
         })
 
-    let previousCategory, previousBrand, newCategory, newBrand;
+    let previousCategory, previousBrand, newCategory, newBrand, colorsArray, deletedColors = [], newColors = [];
 
     if (category) {
         newCategory = await Category.findOne({name: category.toLowerCase()});
@@ -210,6 +245,19 @@ export const updateProductById = asyncHandler(async (req, res) => {
         if (brand !== existingProduct.brand) previousBrand = await Brand.findOne({name: existingProduct.brand.toLowerCase()});
     }
 
+    if (colors) {
+        if (!Array.isArray(colors)) colorsArray = [colors];
+        else colorsArray = [...colors];
+
+        for (const color of colorsArray) {
+            if (!existingProduct.colors.includes(color.toLowerCase())) newColors.push(color.toLowerCase());
+        }
+
+        for (const color of existingProduct.colors) {
+            if (!colorsArray.includes(color.toLowerCase())) deletedColors.push(color.toLowerCase());
+        }
+    }
+
     const updatedProduct = await Product.findByIdAndUpdate(id, {name, brand, description, category, sizes, colors, price, totalQuantity}, {new: true});
 
     if (previousCategory) {
@@ -224,6 +272,26 @@ export const updateProductById = asyncHandler(async (req, res) => {
         await previousBrand.save();
         newBrand.products.push(id);
         await newBrand.save();
+    }
+
+    if (deletedColors.length > 0) {
+        for (const color of deletedColors) {
+            const colorDoc = await Color.findOne({name: color.toLowerCase()});
+            if (colorDoc) {
+                colorDoc.products.splice(colorDoc.products.indexOf(updatedProduct._id), 1);
+                await colorDoc.save();
+            }
+        }
+    }
+
+    if (newColors.length > 0) {
+        for (const color of newColors) {
+            const colorDoc = await Color.findOne({name: color.toLowerCase()});
+            if (colorDoc) {
+                colorDoc.products.push(updatedProduct._id);
+                await colorDoc.save();
+            }
+        }
     }
 
     res.json({
@@ -282,8 +350,18 @@ export const deleteProductById = asyncHandler(async (req, res) => {
         await brandToUpdate.save();
     }
 
+    if (existingProduct.colors.length > 0) {
+        for (const color of existingProduct.colors) {
+            const colorToUpdate = await Color.findOne({name: color.toLowerCase()});
+            if (colorToUpdate) {
+                colorToUpdate.products = colorToUpdate.products.filter(elem => elem != id);
+                await colorToUpdate.save();
+            }
+        }
+    }
+
     res.json({
         success: true,
-        message: "You have successfully delete product",
+        message: "You have successfully deleted product",
     })
 })

@@ -1,80 +1,78 @@
 import asyncHandler from "express-async-handler";
-import Category from "../models/CategoryModel.js";
+import Color from "../models/ColorModel.js";
 import User from "../models/UserModel.js";
 import Product from "../models/ProductModel.js";
-import Brand from "../models/BrandModel.js";
 
-// @desc Create a New Category
-// @route POST /api/v1/categories/create
+// @desc Create a New Color
+// @route POST /api/v1/colors/create
 // @access Private/Admin
-export const createCategory = asyncHandler(async (req, res) => {
-    const { name, image } = req.body;
+export const createColor = asyncHandler(async (req, res) => {
+    const { name } = req.body;
     const { _id: user } = req.body;
 
-    const existingCategory = await Category.findOne({name});
+    const existingColor = await Color.findOne({name});
 
-    if (existingCategory) {
+    if (existingColor) {
         return res.status(400).json({
             success: false,
-            message: "Category already exists",
+            message: "Color already exists",
         })
     }
 
-    const category = await new Category({
+    const color = await new Color({
         name: name.toLowerCase(),
         user,
-        image
     }).save();
 
     res.json({
         success: false,
-        message: "Category created successfully",
-        data: category
+        message: "Color created successfully",
+        data: color
     })
 })
 
-// @desc Get all Categories
-// @route GET /api/v1/categories
+// @desc Get all Colors
+// @route GET /api/v1/colors
 // @access Public
 
-export const getCategories = asyncHandler(async (req, res) => {
-    const categories = await Category.find();
+export const getColors = asyncHandler(async (req, res) => {
+    const colors = await Color.find();
 
     res.json({
         success: true,
-        message: "Categories fetched successfully",
-        data: categories
+        message: "Colors fetched successfully",
+        data: colors
     })
 })
 
-// @desc Get Single Category
-// @route GET /api/v1/categories/:id
+// @desc Get Single Color
+// @route GET /api/v1/colors/:id
 // @access Public
 
-export const getCategoryById = asyncHandler(async (req, res) => {
+export const getColorById = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    const existingCategory = await Category.findById(id);
+    const existingColor = await Color.findById(id);
 
-    if (!existingCategory)
+    if (!existingColor)
         return res.status(404).json({
             success: false,
-            message: "Category with the same ID was not found"
+            message: "Color with the same ID was not found"
         })
 
     res.json({
         success: true,
-        message: "Category fetched successfully",
-        data: existingCategory
+        message: "Color fetched successfully",
+        data: existingColor
     })
 })
 
-// @desc Update Category by its ID
-// @route PUT /api/v1/categories/:id
+// @desc Update Color by its ID
+// @route PUT /api/v1/colors/:id
 // @access Private/Admin
 
-export const updateCategoryById = asyncHandler(async (req, res) => {
-    const {name, image, products: bodyProducts} = req.body;
+export const updateColorById = asyncHandler(async (req, res) => {
+    const {name, products: bodyProducts} = req.body;
     // user _id inserted my middleware
     const {_id: userId} = req.body;
     // product id provided by params
@@ -87,33 +85,33 @@ export const updateCategoryById = asyncHandler(async (req, res) => {
         })
     }
 
-    const existingCategory = await Category.findById(id);
+    const existingColor = await Color.findById(id);
 
-    if (!existingCategory) {
+    if (!existingColor) {
         return res.status(404).json({
             success: false,
-            message: "Category with the same ID can not be found"
+            message: "Color with the same ID can not be found"
         })
     }
 
-    const existingCategoryWithName = await Category.findOne({name: name.toLowerCase()});
+    const existingColorWithName = await Color.findOne({name: name.toLowerCase()});
 
-    if (existingCategoryWithName) {
+    if (existingColorWithName) {
         return res.status(400).json({
             success: false,
-            message: "Category with the same name already exists"
+            message: "Color with the same name already exists"
         })
     }
 
     const existingUserWithId = await User.findById(userId);
 
-    if (existingCategory.user != userId && !existingUserWithId.isAdmin)
+    if (existingColor.user != userId && !existingUserWithId.isAdmin)
         return res.status(403).json({
             success: false,
-            message: "You have no rights to change this category's info"
+            message: "You have no rights to change this color's info"
         })
 
-    const newProductsField = [...existingCategory.products];
+    const newProductsField = [...existingColor.products];
 
     if (bodyProducts) {
         for (const el of bodyProducts.split(",")) {
@@ -140,19 +138,19 @@ export const updateCategoryById = asyncHandler(async (req, res) => {
     }
 
 
-    const updatedCategory = await Category.findByIdAndUpdate(existingCategory._id,{name: name.toLowerCase(), image, products: newProductsField}, {new: true});
+    const updatedColor = await Color.findByIdAndUpdate(existingColor._id,{name: name.toLowerCase(), products: newProductsField}, {new: true});
     res.json({
         success: true,
-        message: "You have successfully updated category's info",
-        data: updatedCategory
+        message: "You have successfully updated color's info",
+        data: updatedColor
     })
 })
 
-// @desc Delete Single Category
-// @route DELETE /api/categories/:id
+// @desc Delete Single Color
+// @route DELETE /api/colors/:id
 // @access Private/Admin
 
-export const deleteCategoryById = asyncHandler(async (req, res) => {
+export const deleteColorById = asyncHandler(async (req, res) => {
     // user _id inserted my middleware
     const {_id: userId} = req.body;
     // product id provided by params
@@ -165,28 +163,28 @@ export const deleteCategoryById = asyncHandler(async (req, res) => {
         })
     }
 
-    const existingCategory = await Category.findById(id);
+    const existingColor = await Color.findById(id);
 
-    if (!existingCategory) {
+    if (!existingColor) {
         return res.status(404).json({
             success: false,
-            message: "Category with the same ID can not be found"
+            message: "Color with the same ID can not be found"
         })
     }
 
     const existingUserWithId = await User.findById(userId);
 
 
-    if (existingCategory.user != userId && !existingUserWithId.isAdmin)
+    if (existingColor.user != userId && !existingUserWithId.isAdmin)
         return res.status(403).json({
             success: false,
             message: "You have no rights to delete this category"
         })
 
-    await Category.findByIdAndDelete(id);
+    await Color.findByIdAndDelete(id);
 
     res.json({
         success: true,
-        message: "You have successfully delete category",
+        message: "You have successfully delete color",
     })
 })

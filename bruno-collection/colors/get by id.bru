@@ -1,0 +1,15 @@
+meta {
+  name: get by id
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseurl}}/colors/6650dec6fc5677862a0cb10c
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
