@@ -8,6 +8,7 @@ import productRouter from "../routes/productRouter.js";
 import categoryRouter from "../routes/categoriesRouter.js";
 import brandRouter from "../routes/brandsRouter.js";
 import colorRouter from "../routes/colorsRouter.js";
+import reviewRouter from "../routes/reviewRouter.js";
 
 connectDB();
 const app = express();
@@ -19,6 +20,7 @@ app.use("/api/v1/products", productRouter);
 app.use("/api/v1/categories", categoryRouter)
 app.use("/api/v1/brands", brandRouter)
 app.use("/api/v1/colors", colorRouter)
+app.use("/api/v1/reviews", reviewRouter)
 
 app.use(errorHandler);
 app.use(notFoundHandler);
