@@ -64,6 +64,11 @@ const ProductSchema = new Schema({
     }
 )
 
+ProductSchema.virtual("avgRating").get(function() {
+    if (Array.isArray(this?.reviews))
+        return (this?.reviews.reduce((sum, elem) => sum + elem.rating, 0) / this.reviews.length).toFixed(1);
+})
+
 const Product = mongoose.model("Product", ProductSchema, "products");
 
 export default Product;
