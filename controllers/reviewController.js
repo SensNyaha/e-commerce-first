@@ -13,7 +13,7 @@ export const createReview = asyncHandler(async (req, res) => {
 
     const { productID } = req.params;
 
-    const existingProduct = await Product.findById(productID);
+    const existingProduct = await Product.findById(productID).populate("reviews");
 
     if (!existingProduct)
         return res.status(404).json({
@@ -21,7 +21,7 @@ export const createReview = asyncHandler(async (req, res) => {
             message: "Product not found"
         })
 
-    if (existingProduct.reviews.find(async rev => (await Review.findById(rev))?.user == userId)) {
+    if (existingProduct.reviews.find(async rev => rev.user == userId)) {
         return res.status(400).json({
             success: false,
             message: "User already commented this product"

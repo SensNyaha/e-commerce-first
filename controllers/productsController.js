@@ -139,7 +139,7 @@ export const getProducts = asyncHandler(async (req, res) => {
 
     const totalDocs = await Product.countDocuments();
 
-    const products = await Product.find(mongooseQuery).skip((page - 1) * limit).limit(limit);
+    const products = await Product.find(mongooseQuery).skip((page - 1) * limit).limit(limit).populate("reviews");
 
     if (!products.length)
         return res.status(404).json({
@@ -169,7 +169,7 @@ export const getProductById = asyncHandler(async (req, res) => {
             message: "No ID provided with request"
         })
 
-    const foundProduct = await Product.findById(id);
+    const foundProduct = await Product.findById(id).populate("reviews");
 
     if (!foundProduct)
         return res.status(404).json({
