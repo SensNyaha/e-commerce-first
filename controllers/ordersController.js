@@ -1,6 +1,7 @@
 import asyncHandler from "express-async-handler";
 import User from "../models/UserModel.js";
 import Product from "../models/ProductModel.js";
+import Order from "../models/OrderModel.js";
 
 // @desc Create Order
 // @route POST /api/v1/orders/create
@@ -24,6 +25,8 @@ export const createOrder = asyncHandler(async (req, res) => {
         })
 
     // if no product or ordered more than exists
+    let totalPrice = 0;
+
     const productArray = [];
     for (const orderItem of orderItems) {
         const product = await Product.findById(orderItem.id);
@@ -34,6 +37,11 @@ export const createOrder = asyncHandler(async (req, res) => {
                 message: "No enough items of some products or there is no ordered item"
             })
         }
+        totalPrice += product?.price * orderItem?.quantity || 0;
+
+        // dont save it here. it will be better to save it after successful creation of order
+        product.totalQuantity -= orderItems.quantity;
+        product.totalSold += orderItems.quantity;
 
         productArray.push(product);
     }
@@ -49,12 +57,19 @@ export const createOrder = asyncHandler(async (req, res) => {
             message: "Bad authentification"
         })
 
-    // TODO: create new order with fields: user, orderItems, shippingAddress, totalPrice
     const newOrder = await new Order({
         user: userId,
-        
+        orderItems,
+        shippingAddress,
+        totalPrice
     }).save();
 
-    // TODO: update the product quantity
+    existingUser.orders.push(newOrder);
+    existingUser.save();
+
+    for (const product of productArray) {
+        await product.save();
+    }
+
     // TODO: continue from 58 ep. 8 minute
 })
