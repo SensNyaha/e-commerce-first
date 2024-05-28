@@ -8,8 +8,8 @@ import Order from "../models/OrderModel.js";
 // @access Private
 
 export const createOrder = asyncHandler(async (req, res) => {
-    // orderItems = [{id, quantity}], shippingAddress = {firstname, lastname, address}
-    const {orderItems, shippingAddress} = req.body;
+    // orderItems = [{id, quantity}], shippingAddress = {firstName, lastName, address}
+    const {orderItems} = req.body;
 
     // validation check of orderItems and shippingAddress
     if (!orderItems.length)
@@ -18,21 +18,15 @@ export const createOrder = asyncHandler(async (req, res) => {
             message: "Empty cart. Nothing to order"
         })
 
-    if (!shippingAddress || !shippingAddress.firstname || !shippingAddress.lastname || !shippingAddress.address)
-        return res.status(400).json({
-            success: false,
-            message: "Wrong type of shipping address info"
-        })
-
-    // if no product or ordered more than exists
     let totalPrice = 0;
 
+    // if no product or ordered more than exists
     const productArray = [];
     for (const orderItem of orderItems) {
         const product = await Product.findById(orderItem.id);
 
-        if (!product || !product.totalQuantity || product.totalQuantity < orderItems.quantity) {
-            res.status(400).json({
+        if (!product || !product.totalQuantity || product.totalQuantity < orderItem.quantity) {
+            return res.status(400).json({
                 success: false,
                 message: "No enough items of some products or there is no ordered item"
             })
@@ -40,8 +34,8 @@ export const createOrder = asyncHandler(async (req, res) => {
         totalPrice += product?.price * orderItem?.quantity || 0;
 
         // dont save it here. it will be better to save it after successful creation of order
-        product.totalQuantity -= orderItems.quantity;
-        product.totalSold += orderItems.quantity;
+        product.totalQuantity -= orderItem.quantity;
+        product.totalSold += orderItem.quantity;
 
         productArray.push(product);
     }
@@ -54,7 +48,30 @@ export const createOrder = asyncHandler(async (req, res) => {
     if (!existingUser)
         return res.status(403).json({
             success: false,
-            message: "Bad authentification"
+            message: "Bad authentication"
+        })
+
+    let userShippingAddress = true;
+    let {shippingAddress} = existingUser;
+
+    if (JSON.stringify(shippingAddress) === "{}") {
+        userShippingAddress = false;
+    }
+
+    if (!userShippingAddress) {
+        shippingAddress = req.body?.shippingAddress;
+    }
+
+    if (!shippingAddress)
+        return res.status(400).json({
+            success: false,
+            message: "Please add shipping address to your account or use custom one for this order"
+        })
+
+    if (!shippingAddress.firstName || !shippingAddress.lastName || !shippingAddress.address)
+        return res.status(400).json({
+            success: false,
+            message: "Wrong type of shipping address info"
         })
 
     const newOrder = await new Order({
@@ -65,11 +82,19 @@ export const createOrder = asyncHandler(async (req, res) => {
     }).save();
 
     existingUser.orders.push(newOrder);
-    existingUser.save();
+
+    if (!userShippingAddress)
+        existingUser.shippingAddress = shippingAddress;
+
+    await existingUser.save();
 
     for (const product of productArray) {
         await product.save();
     }
 
-    // TODO: continue from 58 ep. 8 minute
+    res.json({
+        success: true,
+        message: "Order created successfully",
+        data: newOrder
+    })
 })

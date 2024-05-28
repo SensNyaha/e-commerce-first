@@ -22,12 +22,18 @@ const OrderSchema = new Schema({
         }
     ],
     shippingAddress: {
-        type: Object,
-        required: true,
+        firstName: String,
+        lastName: String,
+        address: String,
+        city: String,
+        postalCode: String,
+        province: String,
+        country: String,
+        phone: String,
     },
     orderNumber: {
         type: String,
-        default: generateOrderNumber(),
+        default: generateOrderNumber,
         unique: true,
     },
     paymentStatus: {
@@ -42,7 +48,7 @@ const OrderSchema = new Schema({
     },
     totalPrice: {
         type: Number,
-        default: 0.0
+        required: true
     },
     currency: {
         type: String,

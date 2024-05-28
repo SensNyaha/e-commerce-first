@@ -20,9 +20,9 @@ const UserSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Order"
     }],
-    wishlists: [{
+    wishlist: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Wishlist"
+        ref: "Product"
     }],
     isAdmin: {
         type: Boolean,

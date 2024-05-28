@@ -133,3 +133,36 @@ export const getUserProfile = asyncHandler( async (req, res) => {
         data: existingUser
     })
 })
+
+// @desc Update User Profile
+// @route PUT /api/v1/users/profile
+// @access Private
+
+export const updateUserProfile = asyncHandler( async (req, res) => {
+    const {_id: userId, username, email, password, wishlistItem, shippingAddress} = req.body;
+
+    const existingUser = await User.findById(userId).select("-password");
+
+    if (!existingUser) {
+        return res.status(403).json({
+            success: false,
+            message: "Authentication failed",
+        })
+    }
+
+    if (username) existingUser.username = username;
+    if (email) existingUser.email = email;
+    if (password) existingUser.password = password;
+    if (wishlistItem) Array.isArray(existingUser.wishlist) ? existingUser.wishlist?.push(wishlistItem) : existingUser.wishlist = [wishlistItem];
+    if (shippingAddress && shippingAddress.firstName && shippingAddress.lastName && shippingAddress.address) existingUser.shippingAddress = shippingAddress;
+
+    await existingUser.save();
+
+    const updatedUser = await User.findById(userId).select("-password");
+
+    res.json({
+        success: true,
+        message: "User updated profile successfully",
+        data: updatedUser
+    })
+})

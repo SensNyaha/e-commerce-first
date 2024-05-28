@@ -1,11 +1,11 @@
 meta {
-  name: create
+  name: update user profile
   type: http
-  seq: 1
+  seq: 4
 }
 
-post {
-  url: {{baseurl}}/colors/create
+put {
+  url: {{baseurl}}/users/profile
   body: json
   auth: bearer
 }
@@ -16,6 +16,6 @@ auth:bearer {
 
 body:json {
   {
-    "name": "yellow"
+    "username": "SENSNYAHA"
   }
 }
