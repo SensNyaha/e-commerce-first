@@ -5,12 +5,14 @@ import Order from "../models/OrderModel.js";
 import Stripe from "stripe";
 import {config} from "dotenv";
 
-// @desc Create Order
-// @route POST /api/v1/orders/create
-// @access Private
+
 
 config();
 const stripe = new Stripe(process.env.STRIPE_SK);
+
+// @desc Create Order
+// @route POST /api/v1/orders/create
+// @access Private
 
 export const createOrder = asyncHandler(async (req, res) => {
     // orderItems = [{id, quantity}], shippingAddress = {firstName, lastName, address}
@@ -115,16 +117,44 @@ export const createOrder = asyncHandler(async (req, res) => {
         metadata: {
             orderId: newOrder?._id.toString()
         },
-        success_url: "http://localhost:3000/success",
-        cancel_url: "http://localhost:3000/cancel"
+        success_url: "http://localhost:3000/api/v1/orders/success",
+        cancel_url: "http://localhost:3000/api/v1/orders/cancel"
     })
 
     res.send(stripeSession.url)
-    //TODO: to link orderItems with stripe session line_items
 
     // res.json({
     //     success: true,
     //     message: "Order created successfully",
     //     data: newOrder
     // })
+})
+
+// @desc Get All Orders
+// @route GET /api/v1/orders
+// @access Admin
+
+export const getAllOrders = asyncHandler(async (req, res) => {
+    let {page, limit} = req.query;
+
+    if (!page) page = 1;
+    if (!limit) limit = 10;
+
+    const totalDocs = await Order.countDocuments();
+
+    const orders = await Order.find().skip((page - 1) * limit).limit(limit);
+
+    if (!orders.length)
+        return res.status(404).json({
+            success: false,
+            message: "No orders to show",
+            total: totalDocs
+        })
+
+    res.json({
+        success: true,
+        message: "Orders fetched successfully",
+        data: orders,
+        total: totalDocs
+    })
 })
