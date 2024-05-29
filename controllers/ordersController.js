@@ -2,10 +2,15 @@ import asyncHandler from "express-async-handler";
 import User from "../models/UserModel.js";
 import Product from "../models/ProductModel.js";
 import Order from "../models/OrderModel.js";
+import Stripe from "stripe";
+import {config} from "dotenv";
 
 // @desc Create Order
 // @route POST /api/v1/orders/create
 // @access Private
+
+config();
+const stripe = new Stripe(process.env.STRIPE_SK);
 
 export const createOrder = asyncHandler(async (req, res) => {
     // orderItems = [{id, quantity}], shippingAddress = {firstName, lastName, address}
@@ -92,9 +97,29 @@ export const createOrder = asyncHandler(async (req, res) => {
         await product.save();
     }
 
-    res.json({
-        success: true,
-        message: "Order created successfully",
-        data: newOrder
+    const stripeSession = await stripe.checkout.sessions.create({
+        line_items: [{
+            price_data: {
+                currency: "usd",
+                product_data: {
+                    name: "Hats",
+                    description: "Best hats"
+                },
+                unit_amount: 10 * 100
+            },
+            quantity: 2
+        }],
+        mode: 'payment',
+        success_url: "http://localhost:3000/success",
+        cancel_url: "http://localhost:3000/cancel"
     })
+
+    res.send(stripeSession.url)
+
+
+    // res.json({
+    //     success: true,
+    //     message: "Order created successfully",
+    //     data: newOrder
+    // })
 })
