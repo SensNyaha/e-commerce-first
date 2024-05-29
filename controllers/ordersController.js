@@ -97,25 +97,30 @@ export const createOrder = asyncHandler(async (req, res) => {
         await product.save();
     }
 
+
     const stripeSession = await stripe.checkout.sessions.create({
-        line_items: [{
+        line_items: productArray.map(item => ({
             price_data: {
                 currency: "usd",
                 product_data: {
-                    name: "Hats",
-                    description: "Best hats"
+                    name: item.name,
+                    description: item.description,
+                    images: item.images
                 },
-                unit_amount: 10 * 100
+                unit_amount: item.price * 100
             },
-            quantity: 2
-        }],
+            quantity: orderItems.find(orderItem => orderItem.id == item._id).quantity
+        })),
         mode: 'payment',
+        metadata: {
+            orderId: newOrder?._id.toString()
+        },
         success_url: "http://localhost:3000/success",
         cancel_url: "http://localhost:3000/cancel"
     })
 
     res.send(stripeSession.url)
-
+    //TODO: to link orderItems with stripe session line_items
 
     // res.json({
     //     success: true,

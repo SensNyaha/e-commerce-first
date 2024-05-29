@@ -10,7 +10,7 @@ import Color from "../models/ColorModel.js";
 // @access Private/Admin
 
 export const createProduct = asyncHandler(async (req, res) => {
-    const { name, brand, description, category, sizes, colors, price, totalQuantity } = req.body;
+    const { name, brand, description, category, sizes, colors, price, totalQuantity, images } = req.body;
     // user _id inserted my middleware
     const { _id } = req.body;
 
@@ -83,7 +83,8 @@ export const createProduct = asyncHandler(async (req, res) => {
         colors,
         user: _id,
         price,
-        totalQuantity
+        totalQuantity,
+        images
     }).save();
 
     existingCategory.products.push(newProduct._id);

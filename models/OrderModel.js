@@ -38,12 +38,10 @@ const OrderSchema = new Schema({
     },
     paymentStatus: {
         type: String,
-        enum: ["Not Paid", "Payment was failed", "Successfully Paid"],
         default: "Not Paid"
     },
     paymentMethod: {
         type: String,
-        enum: ["Not specified", "Credit Card", "Debet Card", "In Cash"],
         default: "Not specified"
     },
     totalPrice: {
@@ -52,12 +50,10 @@ const OrderSchema = new Schema({
     },
     currency: {
         type: String,
-        enum: ["Not specified", "$US", "€EU", "₽RU"],
         default: "Not specified"
     },
     status: {
         type: String,
-        enum: ["Pending", "Approved", "Cancelled", "Delayed", "Paid", "Shipped", "Delivered"],
         default: "Pending"
     },
     deliveredAt: {
